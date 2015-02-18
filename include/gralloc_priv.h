@@ -33,15 +33,17 @@
 
 struct private_module_t;
 struct private_handle_t;
+typedef int ion_user_handle_t;
 
 struct private_module_t {
     gralloc_module_t base;
 
-    private_handle_t* framebuffer;
+    struct private_handle_t* framebuffer;
     uint32_t flags;
     uint32_t numBuffers;
     uint32_t bufferMask;
     pthread_mutex_t lock;
+    unsigned int refcount;
     buffer_handle_t currentBuffer;
     int ionfd;
 
@@ -93,9 +95,9 @@ struct private_handle_t {
     void    *base;
     void    *base1;
     void    *base2;
-    struct ion_handle *handle;
-    struct ion_handle *handle1;
-    struct ion_handle *handle2;
+    ion_user_handle_t handle;
+    ion_user_handle_t handle1;
+    ion_user_handle_t handle2;
 
 #ifdef __cplusplus
     static const int sNumFds = 3;
@@ -117,8 +119,7 @@ struct private_handle_t {
 		     int h, int format, int stride, int vstride) :
         fd(fd), fd1(-1), fd2(-1), magic(sMagic), flags(flags), size(size),
         offset(0), format(format), width(w), height(h), stride(stride),
-        vstride(vstride), base(0), base1(0), base2(0), handle(0), handle1(0),
-        handle2(0)
+        vstride(vstride), base(0), handle(0), handle1(0), handle2(0)
     {
         version = sizeof(native_handle);
         numInts = sNumInts + 2;
